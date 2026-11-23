@@ -1,5 +1,8 @@
 import requests
 import json
+from datetime import date
+
+
 import os
 from dotenv import load_dotenv
 
@@ -82,17 +85,10 @@ def get_video_ids(playlist_id):
         raise e
 
 
-def batch_video(video_id_lst, batch_size):
-    for video_ids in range(0, len(video_id_lst), batch_size):
-        yield video_id_lst[video_id:video_id + batch_size]
-
-
-
-
-
 def extract_video_data(video_ids):
 
     extract_data = []
+
     def batch_list(video_id_lst, batch_size):
         for video_id in range(0, len(video_id_lst), batch_size):
             yield video_id_lst[video_id : video_id + batch_size]
@@ -127,12 +123,18 @@ def extract_video_data(video_ids):
                     "commentCount": statistics.get('commentCount', None),
                 }
 
-            extract_data.append(video_data)
+                extract_data.append(video_data)
     
         return extract_data
             
     except requests.exceptions.RequestException as e:
         raise e
+
+def save_to_json(extract_data):
+    file_path = f"./data/YT_data_{date.today()}.json"
+    
+    with open(file_path, 'w', encoding='utf-8') as json_outputfile:
+        json.dump(extract_data, json_outputfile, indent=4, ensure_ascii=False)
 
 
 
@@ -142,6 +144,11 @@ if __name__ == "__main__":
     print("iniciando la extraccion de datos de los videos del canal")
     video_ids = get_video_ids(playlistId)
     print("iniciando con la extraccion de datos de los videos del canal")
-    print(extract_video_data(video_ids))
+    video_data = extract_video_data(video_ids)
+    print("guardando los datos extraidos en un archivo JSON")
+    save_to_json(video_data)
+    
+
+
 
 
